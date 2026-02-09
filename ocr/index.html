@@ -6,99 +6,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="css/style.css">
-<link rel="manifest" href="manifest.json">
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
 
-<header class="topbar">
-  <button class="icon-btn" onclick="goHome()">⬅</button>
-  <div class="title">OCR Scanner</div>
-  <button class="icon-btn" id="themeToggle">🌙</button>
+<header>
+  <button onclick="location.href='../index.html'">⬅ Back</button>
+  <h2>OCR Scanner</h2>
 </header>
 
-<main class="app">
+<main>
 
-  <!-- CAMERA VIEW -->
-  <section id="cameraSection" hidden>
-    <div class="camera-box">
-      <video id="camera" autoplay playsinline></video>
-      <canvas id="cameraCanvas" hidden></canvas>
-      <div id="edgeOverlay"></div>
-      <button id="captureBtn">📸</button>
-    </div>
-    <button class="secondary-btn" id="closeCameraBtn">Close Camera</button>
-  </section>
+  <div id="dropZone">
+    <input type="file" id="fileInput" accept="image/*" capture="environment">
+    <p>📷 Tap to Camera / Upload Image<br>or Drag & Drop</p>
+  </div>
 
-  <!-- UPLOAD / SCAN -->
-  <section id="scanSection">
-    <label class="scan-tile">
-      <input type="file" id="fileInput" accept="image/*" multiple capture="environment">
-      <div class="scan-icon">📄</div>
-      <div class="scan-text">Tap to Scan or Upload</div>
-    </label>
+  <img id="preview" hidden>
 
-    <div class="controls">
-      <select id="langSelect">
-        <option value="eng">English</option>
-        <option value="tam">Tamil</option>
-        <option value="hin">Hindi</option>
-        <option value="eng+tam+hin">English + Tamil + Hindi</option>
-      </select>
+  <button id="extractBtn" hidden>Extract Text</button>
 
-      <select id="modeSelect">
-        <option value="print">Printed</option>
-        <option value="handwriting">Handwriting</option>
-      </select>
-
-      <select id="filterSelect">
-        <option value="normal">Normal</option>
-        <option value="bw">Black & White</option>
-        <option value="enhance">Enhanced</option>
-        <option value="sharpen">Sharpen</option>
-      </select>
-    </div>
-
-    <div class="action-row">
-      <button id="openCameraBtn">📷 Camera</button>
-      <button id="ocrBtn">🧠 Extract</button>
-      <button id="pdfBtn">📄 PDF</button>
-    </div>
-
-    <div id="previewArea"></div>
-
-    <textarea id="output" placeholder="Extracted text appears here..."></textarea>
-
-    <div class="action-row">
-      <button id="copyBtn">📋 Copy</button>
-      <button id="saveBtn">💾 Save</button>
-      <button id="clearBtn">🗑 Clear</button>
-    </div>
-
-    <h3>History</h3>
-    <div id="historyList"></div>
-  </section>
+  <textarea id="output" placeholder="Extracted text appears here..."></textarea>
 
 </main>
 
-<script src="js/theme.js"></script>
-<script src="js/camera.js"></script>
-<script src="js/opencv.js"></script>
-<script src="js/filters.js"></script>
-<script src="js/ocr.js"></script>
-<script src="js/pdf.js"></script>
-<script src="js/storage.js"></script>
 <script src="js/app.js"></script>
-
-<script>
-function goHome(){
-  window.location.href = "../index.html";
-}
-</script>
-
 </body>
 </html>
