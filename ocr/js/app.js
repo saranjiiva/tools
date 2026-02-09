@@ -1,71 +1,50 @@
 const fileInput = document.getElementById("fileInput");
-const previewArea = document.getElementById("previewArea");
-const ocrBtn = document.getElementById("ocrBtn");
-const pdfBtn = document.getElementById("pdfBtn");
-const copyBtn = document.getElementById("copyBtn");
-const saveBtn = document.getElementById("saveBtn");
-const clearBtn = document.getElementById("clearBtn");
-const filterSelect = document.getElementById("filterSelect");
-const langSelect = document.getElementById("langSelect");
-const modeSelect = document.getElementById("modeSelect");
+const dropZone = document.getElementById("dropZone");
+const preview = document.getElementById("preview");
+const extractBtn = document.getElementById("extractBtn");
 const output = document.getElementById("output");
 
-let pages = [];
-
-fileInput.onchange = handleFiles;
-pdfBtn.onclick = ()=>exportPDF(pages);
-copyBtn.onclick = ()=>navigator.clipboard.writeText(output.value);
-saveBtn.onclick = ()=>saveHistory(output.value, pages[0]);
-clearBtn.onclick = clearAll;
-
-window.addEventListener("cameraCaptured", e=>{
-  handleImage(e.detail);
+// Drag & Drop
+dropZone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropZone.style.background = "#eff6ff";
 });
 
-function handleFiles(){
-  [...fileInput.files].forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = ()=>handleImage(reader.result);
-    reader.readAsDataURL(file);
-  });
+dropZone.addEventListener("dragleave", () => {
+  dropZone.style.background = "";
+});
+
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.style.background = "";
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener("change", () => {
+  handleFile(fileInput.files[0]);
+});
+
+function handleFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    preview.src = reader.result;
+    preview.hidden = false;
+    extractBtn.hidden = false;
+    output.value = "";
+  };
+  reader.readAsDataURL(file);
 }
 
-async function handleImage(dataURL){
-  const img = new Image();
-  img.src = dataURL;
-  await img.decode();
-
-  const { src, contour } = detectEdgesHTML(img);
-  let processed = src;
-
-  if(contour){
-    processed = warpPerspectiveHTML(src, contour);
-  }
-
-  const filtered = applyFilter(processed, filterSelect.value);
-
-  const canvas = document.createElement("canvas");
-  cv.imshow(canvas, filtered);
-  const finalImg = canvas.toDataURL("image/png");
-
-  pages.push(finalImg);
-  previewArea.appendChild(Object.assign(new Image(), { src: finalImg }));
-
-  src.delete();
-  filtered.delete();
-}
-
-ocrBtn.onclick = async ()=>{
+extractBtn.onclick = async () => {
+  extractBtn.innerText = "Processing...";
   output.value = "";
-  for(const img of pages){
-    const blob = await fetch(img).then(r=>r.blob());
-    const text = await runOCR(blob, langSelect.value, modeSelect.value);
-    output.value += text + "\n\n";
-  }
+
+  const worker = await Tesseract.createWorker("eng+tam+hin", 1);
+
+  const { data:{ text } } = await worker.recognize(preview.src);
+
+  await worker.terminate();
+  output.value = text.trim();
+  extractBtn.innerText = "Extract Text";
 };
-
-function clearAll(){
-  pages = [];
-  previewArea.innerHTML = "";
-  output.value = "";
-}
