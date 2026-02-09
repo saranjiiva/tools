@@ -1,0 +1,156 @@
+:root{
+  --bg:#ffffff;
+  --fg:#111827;
+  --card:#f3f4f6;
+  --primary:#2563eb;
+}
+
+body.dark{
+  --bg:#0f172a;
+  --fg:#e5e7eb;
+  --card:#020617;
+  --primary:#38bdf8;
+}
+
+body{
+  margin:0;
+  font-family: system-ui, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 14px;
+  background:var(--card);
+  font-size:18px;
+  font-weight:600;
+}
+
+.icon-btn{
+  background:none;
+  border:none;
+  font-size:20px;
+  cursor:pointer;
+  color:var(--fg);
+}
+
+.app{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.scan-tile{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  height:170px;
+  border-radius:14px;
+  background:var(--card);
+  border:2px dashed var(--primary);
+  color:var(--primary);
+  cursor:pointer;
+  position:relative;
+}
+
+.scan-tile input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+}
+
+.scan-icon{font-size:42px;}
+.scan-text{font-size:14px;}
+
+.controls{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+select, textarea{
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:var(--card);
+  color:var(--fg);
+  font-size:14px;
+}
+
+textarea{
+  min-height:160px;
+  resize:none;
+}
+
+.action-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+button{
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+  background:var(--primary);
+  color:white;
+}
+
+.secondary-btn{
+  background:#6b7280;
+}
+
+#previewArea img{
+  width:100%;
+  border-radius:12px;
+  margin-bottom:8px;
+}
+
+.camera-box{
+  position:relative;
+  border-radius:14px;
+  overflow:hidden;
+  background:black;
+}
+
+#camera{
+  width:100%;
+}
+
+#edgeOverlay{
+  position:absolute;
+  inset:0;
+  border:2px dashed rgba(255,255,255,0.6);
+  pointer-events:none;
+}
+
+#captureBtn{
+  position:absolute;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  font-size:18px;
+}
+
+#historyList{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.history-item{
+  background:var(--card);
+  padding:10px;
+  border-radius:10px;
+  font-size:13px;
+  cursor:pointer;
+}
