@@ -5,7 +5,7 @@
 <title>OCR Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
 
 <style>
 body{
@@ -92,6 +92,33 @@ textarea{
 
 </main>
 
-<script src="app.js"></script>
+<script>
+const fileInput = document.getElementById("fileInput");
+const preview = document.getElementById("preview");
+const extractBtn = document.getElementById("extractBtn");
+const output = document.getElementById("output");
+
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    preview.src = reader.result;
+    preview.hidden = false;
+    extractBtn.hidden = false;
+    output.value = "";
+  };
+  reader.readAsDataURL(file);
+};
+
+extractBtn.onclick = () => {
+  extractBtn.innerText = "Processing...";
+  Tesseract.recognize(preview.src, "eng+tam+hin").then(({ data }) => {
+    output.value = data.text;
+    extractBtn.innerText = "Extract Text";
+  });
+};
+</script>
+
 </body>
 </html>
