@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Code Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header>
+  <h1>AI Code Studio</h1>
+  <button id="themeToggle">🌙</button>
+</header>
+
+<main>
+
+<section class="card">
+  <h2>🔑 API Key</h2>
+  <input type="password" id="apiKey" placeholder="Enter your AI API key">
+</section>
+
+<section class="card">
+  <h2>💬 Prompt → Code</h2>
+  <textarea id="promptInput" placeholder="Describe what you want..."></textarea>
+  <button onclick="generateCode()">Generate Code</button>
+</section>
+
+<section class="card">
+  <h2>🖼 Image → Code</h2>
+  <input type="file" id="imageInput" accept="image/*">
+  <button onclick="imageToCode()">Generate From Image</button>
+</section>
+
+<section class="card">
+  <h2>📄 Generated Code</h2>
+  <pre id="codeOutput"></pre>
+  <button onclick="copyCode()">📋 Copy</button>
+  <button onclick="downloadCode()">⬇ Download</button>
+  <button onclick="previewCode()">👁 Preview</button>
+</section>
+
+<iframe id="previewFrame"></iframe>
+
+</main>
+
+<script src="js/app.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/image2code.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/download.js"></script>
+</body>
+</html>
