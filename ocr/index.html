@@ -5,23 +5,83 @@
 <title>OCR Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="css/style.css">
-
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#ffffff;
+  color:#111827;
+}
+header{
+  padding:12px;
+  font-size:18px;
+  font-weight:bold;
+  border-bottom:1px solid #e5e7eb;
+}
+main{
+  max-width:600px;
+  margin:auto;
+  padding:16px;
+}
+#box{
+  border:2px dashed #2563eb;
+  border-radius:12px;
+  height:180px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#2563eb;
+  font-weight:600;
+  cursor:pointer;
+  position:relative;
+}
+#box input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+}
+#preview{
+  width:100%;
+  margin-top:12px;
+  border-radius:10px;
+}
+button{
+  width:100%;
+  margin-top:12px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+textarea{
+  width:100%;
+  margin-top:12px;
+  height:200px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  padding:10px;
+  font-size:14px;
+  resize:none;
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  <button onclick="location.href='../index.html'">⬅ Back</button>
-  <h2>OCR Scanner</h2>
-</header>
+<header>OCR Scanner</header>
 
 <main>
 
-  <div id="dropZone">
+  <div id="box">
     <input type="file" id="fileInput" accept="image/*" capture="environment">
-    <p>📷 Tap to Camera / Upload Image<br>or Drag & Drop</p>
+    Tap to Camera / Upload Image
   </div>
 
   <img id="preview" hidden>
@@ -32,6 +92,6 @@
 
 </main>
 
-<script src="js/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
