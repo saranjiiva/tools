@@ -1,31 +1,12 @@
 const fileInput = document.getElementById("fileInput");
-const dropZone = document.getElementById("dropZone");
 const preview = document.getElementById("preview");
 const extractBtn = document.getElementById("extractBtn");
 const output = document.getElementById("output");
 
-// Drag & Drop
-dropZone.addEventListener("dragover", e => {
-  e.preventDefault();
-  dropZone.style.background = "#eff6ff";
-});
-
-dropZone.addEventListener("dragleave", () => {
-  dropZone.style.background = "";
-});
-
-dropZone.addEventListener("drop", e => {
-  e.preventDefault();
-  dropZone.style.background = "";
-  handleFile(e.dataTransfer.files[0]);
-});
-
 fileInput.addEventListener("change", () => {
-  handleFile(fileInput.files[0]);
-});
-
-function handleFile(file){
+  const file = fileInput.files[0];
   if(!file) return;
+
   const reader = new FileReader();
   reader.onload = () => {
     preview.src = reader.result;
@@ -34,17 +15,17 @@ function handleFile(file){
     output.value = "";
   };
   reader.readAsDataURL(file);
-}
+});
 
-extractBtn.onclick = async () => {
+extractBtn.addEventListener("click", async () => {
   extractBtn.innerText = "Processing...";
-  output.value = "";
+  extractBtn.disabled = true;
 
-  const worker = await Tesseract.createWorker("eng+tam+hin", 1);
-
+  const worker = await Tesseract.createWorker("eng+tam+hin");
   const { data:{ text } } = await worker.recognize(preview.src);
-
   await worker.terminate();
+
   output.value = text.trim();
   extractBtn.innerText = "Extract Text";
-};
+  extractBtn.disabled = false;
+});
