@@ -2,71 +2,902 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Work Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Host Dashboard — Metabolic Challenge</title>
 <style>
-body{
-  margin:0;
-  font-family: Arial, Helvetica, sans-serif;
-  background:#ffffff;
-  color:#111827;
-}
-
-header{
-  text-align:center;
-  padding:30px 15px;
-  font-size:28px;
-  font-weight:600;
-}
-
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap:20px;
-}
-
-.tile{
-  background:#f3f4f6;
-  border-radius:12px;
-  height:120px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:28px;
-  font-weight:bold;
-  text-decoration:none;
-  color:#111827;
-  box-shadow:0 4px 8px rgba(0,0,0,0.08);
-  transition:0.2s ease;
-}
-
-.tile:hover{
-  background:#e5e7eb;
-  transform:translateY(-4px);
-}
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+ 
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --accent: #7c6ff7;
+    --accent2: #4ecca3;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --g1: #7c6ff7; --g2: #f59e0b; --g3: #4ecca3;
+    --g4: #ef4444; --g5: #ec4899; --g6: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+ 
+  /* ── LOGIN ── */
+  #login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 24px; padding: 40px; width: 380px; text-align: center;
+  }
+  .login-card h2 { font-size: 22px; margin-bottom: 8px; }
+  .login-card p  { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .inp {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 16px;
+    outline: none; margin-bottom: 14px; transition: border-color .2s;
+  }
+  .inp:focus { border-color: var(--accent); }
+  .btn {
+    padding: 13px 24px; border-radius: 10px; border: none;
+    font-family: var(--font); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-accent { background: linear-gradient(135deg, var(--accent), #5b55d4); color: #fff; }
+  .btn-success { background: linear-gradient(135deg, var(--accent2), #1da878); color: #fff; }
+  .btn-danger  { background: var(--danger); color: #fff; }
+  .btn-warn    { background: var(--warn); color: #000; }
+  .btn-ghost   { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-full { width: 100%; }
+ 
+  /* ── DASHBOARD LAYOUT ── */
+  #dashboard { display: none; }
+  .top-bar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 { font-size: 18px; font-weight: 700; }
+  .top-bar-right { display: flex; align-items: center; gap: 12px; }
+  .online-badge {
+    background: rgba(34,197,94,.15); border: 1px solid var(--success);
+    border-radius: 100px; padding: 4px 12px; font-size: 13px; font-weight: 600; color: var(--success);
+  }
+ 
+  .main { display: grid; grid-template-columns: 1fr 380px; gap: 0; height: calc(100vh - 57px); }
+  .left-panel { padding: 20px 24px; overflow-y: auto; }
+  .right-panel { background: var(--surface); border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+ 
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px;
+  }
+ 
+  /* ── LEADERBOARD ── */
+  .group-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .group-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; text-align: center; position: relative;
+    transition: border-color .3s;
+  }
+  .group-card.leader { border-color: var(--warn); }
+  .group-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .group-score {
+    font-size: 28px; font-weight: 700; font-family: var(--mono);
+    transition: all .4s ease;
+  }
+  .group-members { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .group-rank {
+    position: absolute; top: -8px; right: -8px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--warn); color: #000; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+ 
+  /* Bar chart */
+  .bar-chart { margin-bottom: 24px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-label { font-size: 13px; font-weight: 500; width: 70px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 24px; background: var(--surface2); border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; transition: width .5s ease; display: flex; align-items: center; padding-left: 8px; }
+  .bar-val { font-size: 12px; font-weight: 600; color: #fff; font-family: var(--mono); white-space: nowrap; }
+ 
+  /* Player table */
+  .player-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .player-table th { text-align: left; padding: 8px 10px; color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .player-table td { padding: 9px 10px; border-bottom: 1px solid rgba(42,42,61,.5); }
+  .player-table tr:last-child td { border-bottom: none; }
+  .group-pill {
+    display: inline-block; border-radius: 100px; padding: 2px 8px;
+    font-size: 11px; font-weight: 600;
+  }
+ 
+  /* ── CONTROL PANEL ── */
+  .control-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px;
+  }
+  .status-indicator {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: var(--muted);
+    transition: background .3s;
+  }
+  .status-dot.live  { background: var(--success); animation: statusPulse 1.5s infinite; }
+  .status-dot.lobby { background: var(--warn); }
+  @keyframes statusPulse { 50% { opacity: .4; } }
+ 
+  .q-selector { margin-bottom: 12px; }
+  .q-selector select { appearance: none; }
+  .round-selector { margin-bottom: 10px; }
+  .round-selector select {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 14px; outline: none;
+    appearance: none;
+  }
+ 
+  .q-preview {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5;
+    color: var(--muted); margin-bottom: 12px; min-height: 60px;
+  }
+  .q-preview strong { color: var(--text); }
+ 
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+ 
+  .timer-control { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .timer-control input[type=range] { flex: 1; }
+  .timer-val { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--warn); min-width: 36px; }
+ 
+  /* Live timer */
+  .live-timer-display {
+    text-align: center; padding: 12px;
+    background: var(--bg); border-radius: 10px; border: 1px solid var(--border);
+    margin-top: 10px;
+  }
+  .live-timer-num { font-size: 36px; font-weight: 700; font-family: var(--mono); color: var(--warn); }
+  .live-timer-num.danger { color: var(--danger); }
+ 
+  /* Answer tally */
+  .tally-bar { margin-top: 12px; }
+  .tally-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .tally-key { font-size: 12px; font-weight: 700; width: 24px; font-family: var(--mono); color: var(--accent); }
+  .tally-track { flex: 1; height: 18px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .tally-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s ease; }
+  .tally-count { font-size: 12px; font-family: var(--mono); color: var(--muted); width: 24px; text-align: right; }
+ 
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; background: var(--surface2); border-radius: 10px; padding: 3px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; padding: 8px; border-radius: 8px; border: none;
+    background: transparent; color: var(--muted); font-family: var(--font); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all .15s; text-align: center;
+  }
+  .tab.active { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+ 
+  /* Toast */
+  .toast-host {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500;
+    transform: translateY(80px); transition: transform .3s; z-index: 999;
+  }
+  .toast-host.show { transform: translateY(0); }
+  .toast-host.success { border-color: var(--success); color: var(--success); }
+  .toast-host.error   { border-color: var(--danger);  color: var(--danger); }
 </style>
 </head>
-
 <body>
-
-<header>Work Tools</header>
-
-<div class="container">
-  <a class="tile" href="ocr/index.html">OCR</a>
-  <a class="tile" href="ai/index.html">2</a>
-  <a class="tile" href="tool3.html">3</a>
-  <a class="tile" href="tool4.html">4</a>
-  <a class="tile" href="tool5.html">5</a>
-  <a class="tile" href="tool6.html">6</a>
-  <a class="tile" href="tool7.html">7</a>
-  <a class="tile" href="tool8.html">8</a>
-  <a class="tile" href="tool9.html">9</a>
-  <a class="tile" href="tool10.html">10</a>
+ 
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div style="font-size:40px;margin-bottom:16px;">🔬</div>
+    <h2>Host Dashboard</h2>
+    <p>Metabolic Challenge · Phase 1 MBBS</p>
+    <input class="inp" type="password" id="host-pw" placeholder="Host password" onkeydown="if(event.key==='Enter')hostLogin()">
+    <button class="btn btn-accent btn-full" onclick="hostLogin()">Enter Dashboard →</button>
+  </div>
 </div>
-
+ 
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="top-bar">
+    <h1>🔬 Metabolic Challenge — Host</h1>
+    <div class="top-bar-right">
+      <span class="online-badge" id="online-count">0 online</span>
+      <button class="btn btn-danger" onclick="endQuiz()">End Quiz</button>
+    </div>
+  </div>
+ 
+  <div class="main">
+ 
+    <!-- LEFT: Scores -->
+    <div class="left-panel">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('scores')">Group Scores</button>
+        <button class="tab" onclick="switchTab('players')">All Players</button>
+        <button class="tab" onclick="switchTab('live')">Live Answers</button>
+      </div>
+ 
+      <!-- SCORES TAB -->
+      <div class="tab-panel active" id="tab-scores">
+        <div class="section-title">Group Leaderboard</div>
+        <div class="group-grid" id="group-grid">
+          <!-- rendered by JS -->
+        </div>
+        <div class="section-title" style="margin-top:8px;">Score Chart</div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+ 
+      <!-- PLAYERS TAB -->
+      <div class="tab-panel" id="tab-players">
+        <div class="section-title">All Players (<span id="player-count">0</span>)</div>
+        <table class="player-table">
+          <thead><tr>
+            <th>#</th><th>Name</th><th>Group</th><th>Score</th><th>Correct</th>
+          </tr></thead>
+          <tbody id="player-tbody"></tbody>
+        </table>
+      </div>
+ 
+      <!-- LIVE ANSWERS TAB -->
+      <div class="tab-panel" id="tab-live">
+        <div class="section-title">Answer Distribution</div>
+        <div id="tally-area">
+          <div style="color:var(--muted);font-size:14px;padding:20px 0;">Start a question to see live answers.</div>
+        </div>
+        <div style="margin-top:20px;">
+          <div class="section-title">Response Rate</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+              <div id="response-fill" style="height:100%;background:var(--accent2);border-radius:4px;width:0%;transition:width .4s;"></div>
+            </div>
+            <span id="response-pct" style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--accent2);">0%</span>
+          </div>
+          <div style="font-size:13px;color:var(--muted);"><span id="response-num">0</span> / <span id="response-total">0</span> responded</div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- RIGHT: Control Panel -->
+    <div class="right-panel">
+ 
+      <!-- Status -->
+      <div class="control-card">
+        <div class="status-indicator">
+          <div class="status-dot" id="status-dot"></div>
+          <span style="font-size:13px;font-weight:600;" id="status-label">Lobby — waiting for players</span>
+        </div>
+        <div class="btn-grid">
+          <button class="btn btn-success" id="start-lobby-btn" onclick="openLobby()">Open Lobby</button>
+          <button class="btn btn-warn" onclick="sendToLobby()">← Back to Lobby</button>
+        </div>
+      </div>
+ 
+      <!-- Question Control -->
+      <div class="control-card">
+        <div class="section-title">Send Question</div>
+ 
+        <div class="round-selector">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Round</div>
+          <select id="round-sel" onchange="updateQuestionList()" style="width:100%;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:14px;outline:none;">
+            <option value="1">Round 1: Case-Based MCQs</option>
+            <option value="2">Round 2: Assertion–Reason</option>
+            <option value="3">Round 3: Image-Based</option>
+            <option value="4">Round 4: Match the Following</option>
+            <option value="5">Round 5: Fill in the Blanks</option>
+            <option value="6">Round 6: Connection Round</option>
+            <option value="7">Round 7: Error Spotting</option>
+            <option value="8">Round 8: Sequence Arrangement</option>
+            <option value="buzzer">Buzzer: Rapid Fire</option>
+            <option value="whoami">Who Am I?</option>
+            <option value="puzzle">Clinical Puzzle</option>
+          </select>
+        </div>
+ 
+        <div class="round-selector">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Question</div>
+          <select id="question-sel" onchange="previewQuestion()" style="width:100%;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:14px;outline:none;"></select>
+        </div>
+ 
+        <div class="q-preview" id="q-preview">Select a question to preview it here.</div>
+ 
+        <div class="timer-control">
+          <span style="font-size:12px;color:var(--muted);">Timer</span>
+          <input type="range" min="10" max="120" step="5" value="30" id="timer-range" oninput="document.getElementById('timer-val-display').textContent=this.value+'s'">
+          <span class="timer-val" id="timer-val-display">30s</span>
+        </div>
+ 
+        <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button class="btn btn-accent" onclick="sendQuestion()">▶ Send Question</button>
+          <button class="btn btn-ghost" onclick="revealAnswer()">Show Answer</button>
+        </div>
+      </div>
+ 
+      <!-- Live timer -->
+      <div class="control-card" id="live-timer-card" style="display:none;">
+        <div class="section-title">Time Remaining</div>
+        <div class="live-timer-display">
+          <div class="live-timer-num" id="host-timer">--</div>
+        </div>
+        <button class="btn btn-danger btn-full" style="margin-top:10px;" onclick="stopQuestion()">Stop Question</button>
+        <div class="tally-bar" id="host-tally"></div>
+      </div>
+ 
+      <!-- Answer reveal -->
+      <div class="control-card" id="answer-reveal-card" style="display:none;">
+        <div class="section-title">Correct Answer</div>
+        <div id="answer-display" style="background:rgba(34,197,94,.1);border:1px solid var(--success);border-radius:10px;padding:14px;font-size:14px;line-height:1.55;color:var(--success);"></div>
+      </div>
+ 
+    </div>
+  </div>
+</div>
+ 
+<div class="toast-host" id="host-toast"></div>
+ 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+ 
+// ── PASTE YOUR FIREBASE CONFIG HERE (same as index.html) ──
+const firebaseConfig = {
+  apiKey: "AIzaSyAsI_htZo2YDnu7v27oGK05LbmlgnXAf1k",
+  authDomain: "metabolic-quiz.firebaseapp.com",
+  projectId: "metabolic-quiz",
+  storageBucket: "metabolic-quiz.firebasestorage.app",
+  messagingSenderId: "871560427437",
+  appId: "1:871560427437:web:c591a4ad1b18d771f89324",
+  measurementId: "G-CJG804BVQP"
+};
+ 
+const HOST_PASSWORD = "mbbs2024"; // Change this!
+ 
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+ 
+// ── ALL QUESTIONS ──
+const QUESTIONS = {
+  1: [
+    {
+      id:'1-1', type:'mcq', points:10,
+      text:'A 1-week-old neonate has ammonia 887 μmol/L with markedly elevated citrulline but undetectable argininosuccinate. Which enzyme is most likely deficient?',
+      options:['Arginase','Argininosuccinate lyase','Argininosuccinate synthetase','Carbamoyl phosphate synthetase I'],
+      answer:'C', timeLimit:45,
+      explanation:'Elevated citrulline + absent argininosuccinate = block at argininosuccinate synthetase (combines citrulline + aspartate).'
+    },
+    {
+      id:'1-2', type:'mcq', points:10,
+      text:'A 2-year-old presents with oedema, swollen abdomen, and growth failure after being weaned onto a starchy diet poor in protein. What is the diagnosis?',
+      options:['Marasmus','Kwashiorkor','Homocystinuria','Maple Syrup Urine Disease'],
+      answer:'B', timeLimit:30,
+      explanation:'Kwashiorkor = protein deficiency despite adequate calories → negative nitrogen balance → oedema from low albumin.'
+    }
+  ],
+  2: [
+    {
+      id:'2-1', type:'assertion', points:10,
+      text:'Assertion (A): In classical PKU, tyrosine becomes an essential dietary amino acid.\nReason (R): Classical PKU is caused by deficiency of phenylalanine hydroxylase, preventing conversion of phenylalanine to tyrosine.',
+      options:['Both A and R true; R explains A','Both A and R true; R does NOT explain A','A true, R false','A false, R true'],
+      answer:'A', timeLimit:40,
+      explanation:'PAH converts Phe → Tyr. Without it, Tyr cannot be made endogenously → must be supplied in diet.'
+    }
+  ],
+  3: [
+    {
+      id:'3-1', type:'fitb', points:15,
+      text:'[Image shown on projector]\nA 40-year-old patient has bluish-black pigment on the pinna and sclera, with severe intervertebral disk degeneration on X-ray.\n\nName the metabolic disorder and the metabolite responsible for dark pigmentation.',
+      answer:'alkaptonuria homogentisic acid',
+      acceptedAnswers:['alkaptonuria','homogentisic'],
+      timeLimit:60,
+      explanation:'Alkaptonuria = deficiency of homogentisic acid oxidase → homogentisate accumulates → oxidises to dark pigment (ochronosis).'
+    }
+  ],
+  4: [
+    {
+      id:'4-1', type:'match', points:15,
+      text:'Match the enzyme deficiency (Column A) with the correct clinical finding (Column B):',
+      pairs:[
+        { left:'Cystathionine β-synthase' },
+        { left:'Uroporphyrinogen decarboxylase' },
+        { left:'Phenylalanine hydroxylase' },
+        { left:'Branched-chain α-ketoacid dehydrogenase' }
+      ],
+      rightOptions:['Photosensitivity and blistering skin','Musty/mousy odor of urine','Lens dislocation and deep vein thrombosis','Maple syrup odor of urine'],
+      answer:'Lens dislocation and deep vein thrombosis|Photosensitivity and blistering skin|Musty/mousy odor of urine|Maple syrup odor of urine',
+      timeLimit:60,
+      explanation:'1→C (Homocystinuria), 2→A (Porphyria Cutanea Tarda), 3→B (PKU), 4→D (MSUD)'
+    }
+  ],
+  5: [
+    {
+      id:'5-1', type:'fitb', points:10,
+      text:'The active form of vitamin B6, _______, serves as a crucial coenzyme for all aminotransferase reactions by functioning as an amino group carrier.',
+      answer:'pyridoxal phosphate',
+      acceptedAnswers:['pyridoxal phosphate','plp'],
+      timeLimit:30,
+      explanation:'Pyridoxal phosphate (PLP) is the active coenzyme of all transamination reactions.'
+    },
+    {
+      id:'5-2', type:'fitb', points:10,
+      text:'The rate-limiting enzyme of the urea cycle is _______, which is absolutely dependent on the allosteric activator _______.',
+      answer:'cps i n-acetylglutamate',
+      acceptedAnswers:['cps','carbamoyl phosphate synthetase','nag','n-acetylglutamate'],
+      timeLimit:30,
+      explanation:'CPS I is rate-limiting; activated allosterically by NAG (N-acetylglutamate).'
+    },
+    {
+      id:'5-3', type:'fitb', points:10,
+      text:'The only two purely ketogenic amino acids, which cannot give rise to net glucose synthesis, are _______ and _______.',
+      answer:'leucine lysine',
+      acceptedAnswers:['leucine','lysine'],
+      timeLimit:30,
+      explanation:'Leucine and Lysine are the only purely ketogenic amino acids — they are catabolised exclusively to acetyl-CoA/acetoacetate.'
+    }
+  ],
+  6: [
+    {
+      id:'6-1', type:'connection', points:15,
+      text:'Connect the clues and identify the molecule:',
+      clues:[
+        'I require ATP to form, but I contain no phosphate groups.',
+        'My main job is to wander around the body donating methyl groups.',
+        'I am synthesized directly from an essential sulfur-containing amino acid.',
+        'After I donate my methyl group, I eventually give rise to homocysteine.'
+      ],
+      answer:'sam',
+      acceptedAnswers:['sam','s-adenosylmethionine','adenosylmethionine'],
+      timeLimit:50,
+      explanation:'SAM (S-adenosylmethionine) is the universal methyl donor, made from Methionine + ATP, and yields homocysteine after demethylation.'
+    }
+  ],
+  7: [
+    {
+      id:'7-1', type:'error', points:15,
+      text:'Spot the biochemical error:\n\n"During the urea cycle in the liver, the two nitrogen atoms of a urea molecule are BOTH directly provided by free ammonia (NH3) generated by oxidative deamination."',
+      answer:'second nitrogen comes from aspartate',
+      acceptedAnswers:['aspartate','aspartic'],
+      timeLimit:45,
+      explanation:'Error: Only 1 N is from free NH3 (via carbamoyl phosphate). The SECOND N is donated by aspartate.'
+    }
+  ],
+  8: [
+    {
+      id:'8-1', type:'sequence', points:15,
+      text:'Arrange the steps of the Urea Cycle in the correct chronological order:',
+      items:[
+        { key:'A', text:'Argininosuccinate is cleaved to yield arginine and fumarate.' },
+        { key:'B', text:'Citrulline combines with aspartate to form argininosuccinate.' },
+        { key:'C', text:'Arginase hydrolyzes arginine to release urea and ornithine.' },
+        { key:'D', text:'Ammonia, CO2, and ATP condense to form carbamoyl phosphate.' },
+        { key:'E', text:'Carbamoyl phosphate transfers its carbamoyl group to ornithine → citrulline.' }
+      ],
+      answer:'DEBAC', timeLimit:60,
+      explanation:'D→E→B→A→C: Carbamoyl phosphate synthesis → Citrulline → Argininosuccinate → Arginine + Fumarate → Urea + Ornithine.'
+    }
+  ],
+  buzzer: [
+    { id:'b-1', type:'rapid', points:5,  text:'Which amino acid is directly hydroxylated to form Tyrosine?', answer:'phenylalanine', acceptedAnswers:['phenylalanine'], timeLimit:10, explanation:'Phenylalanine → Tyrosine via Phenylalanine hydroxylase (PAH).' },
+    { id:'b-2', type:'rapid', points:5,  text:'What is the non-toxic transport form of ammonia from peripheral tissues to the liver?', answer:'glutamine', acceptedAnswers:['glutamine','alanine'], timeLimit:10, explanation:'Glutamine (brain/muscle) and Alanine (muscle) are the non-toxic ammonia carriers.' },
+    { id:'b-3', type:'rapid', points:5,  text:'Name the metabolic disease associated with a "sweaty feet" odor.', answer:'isovaleric acidemia', acceptedAnswers:['isovaleric'], timeLimit:10, explanation:'Isovaleric acidemia — isovaleryl CoA accumulates → sweaty cheese/feet odor.' },
+    { id:'b-4', type:'rapid', points:5,  text:'What neurotransmitter is formed by the decarboxylation of Histidine?', answer:'histamine', acceptedAnswers:['histamine'], timeLimit:10, explanation:'Histidine → Histamine via histidine decarboxylase.' }
+  ],
+  whoami: [
+    {
+      id:'w-1', type:'whoami', points:15,
+      text:'Who Am I? — Read each clue carefully.',
+      clues:[
+        'I am the only organelle-crossing bridge in the Urea Cycle.',
+        'I carry two nitrogens, but I am not Urea.',
+        'If my "transporter" fails, ammonia rises and orotic acid spills into the urine.'
+      ],
+      answer:'citrulline', acceptedAnswers:['citrulline'], timeLimit:60,
+      explanation:'Citrulline is synthesised in the mitochondria and exits to the cytosol via the ornithine-citrulline antiporter.'
+    },
+    {
+      id:'w-2', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am a Dioxygenase enzyme that hates a specific "Acid."',
+        'When I am missing, your urine turns black upon standing.',
+        'My deficiency leads to "Ochronosis" in the cartilage.'
+      ],
+      answer:'homogentisic acid oxidase', acceptedAnswers:['homogentisic','homogentisate oxidase'], timeLimit:60,
+      explanation:'Homogentisic acid oxidase deficiency → Alkaptonuria → black urine + ochronosis.'
+    },
+    {
+      id:'w-3', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am a simple amino acid, but I am the precursor for Heme, Purines, and Creatine.',
+        'I am the only amino acid without a chiral center (I have no isomers).',
+        'I am the most inhibitory neurotransmitter in the spinal cord.'
+      ],
+      answer:'glycine', acceptedAnswers:['glycine'], timeLimit:60,
+      explanation:'Glycine: no chiral center, precursor for Heme/Purines/Creatine, inhibitory NT in spinal cord.'
+    },
+    {
+      id:'w-4', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am the "Sponge" that mops up excess Ammonia in the brain.',
+        'I am formed from Glutamate by adding one more Nitrogen atom.',
+        'High levels of me cause osmotic swelling and cerebral edema.'
+      ],
+      answer:'glutamine', acceptedAnswers:['glutamine'], timeLimit:60,
+      explanation:'Glutamine: formed by Glutamine synthetase (Glu + NH3 + ATP). High levels → osmotic swelling → cerebral edema.'
+    },
+    {
+      id:'w-5', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am an enzyme that needs Copper (Cu²⁺) to work.',
+        'I convert Tyrosine into DOPA and eventually into a dark pigment.',
+        'Without me, the world looks very "white" and the eyes are pinkish-red.'
+      ],
+      answer:'tyrosinase', acceptedAnswers:['tyrosinase'], timeLimit:60,
+      explanation:'Tyrosinase is a copper-dependent enzyme; deficiency → Albinism.'
+    },
+    {
+      id:'w-6', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am the active form of a vitamin often called "Folates."',
+        'I carry methyl, methylene, and formyl groups like a delivery van.',
+        'Without enough of me, DNA synthesis stops and RBCs get Megaloblastic.'
+      ],
+      answer:'tetrahydrofolate', acceptedAnswers:['tetrahydrofolate','thf'], timeLimit:60,
+      explanation:'THF (Tetrahydrofolate) carries one-carbon units for DNA synthesis; deficiency → Megaloblastic anaemia.'
+    },
+    {
+      id:'w-7', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am a sulfur-containing intermediate in Methionine metabolism.',
+        'If my levels rise in the blood, your coronary arteries are in big trouble.',
+        'I need Vitamin B12 and B6 to be "recycled" back to normal.'
+      ],
+      answer:'homocysteine', acceptedAnswers:['homocysteine'], timeLimit:60,
+      explanation:'Homocysteine: elevated levels → atherosclerosis. Recycled by B12 (→ Methionine) and B6 (→ Cysteine).'
+    },
+    {
+      id:'w-8', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am the "Rate-Limiting" enzyme of the Urea Cycle.',
+        'I live in the Mitochondria and I am absolutely dependent on N-Acetylglutamate (NAG) for activation.',
+        'I condense Ammonia and CO2 into a high-energy "Phosphate" molecule.'
+      ],
+      answer:'cps i', acceptedAnswers:['cps','carbamoyl phosphate synthetase'], timeLimit:60,
+      explanation:'CPS I (Carbamoyl Phosphate Synthetase I): mitochondrial, rate-limiting, NAG-activated.'
+    },
+    {
+      id:'w-9', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am an amino acid that serves as the "Parent" of Serotonin and Melatonin.',
+        'I am the precursor for the vitamin Niacin (B3).',
+        'In Hartnup disease, I am lost in the urine, leading to 3Ds (Dermatitis, Diarrhea, Dementia).'
+      ],
+      answer:'tryptophan', acceptedAnswers:['tryptophan'], timeLimit:60,
+      explanation:'Tryptophan → Serotonin → Melatonin; also → Niacin. Hartnup disease = defective neutral AA transporter.'
+    },
+    {
+      id:'w-10', type:'whoami', points:15,
+      text:'Who Am I?',
+      clues:[
+        'I am a complex enzyme that requires "TLCFN" (5 coenzymes) to function.',
+        'I love Alpha-Keto acids derived from Valine, Leucine, and Isoleucine.',
+        'When I am sluggish, the diaper smells like a burnt sugar factory.'
+      ],
+      answer:'bckdh', acceptedAnswers:['bckdh','branched-chain','branched chain'], timeLimit:60,
+      explanation:'BCKDH (Branched-Chain α-Keto Acid Dehydrogenase): requires TPP, Lipoamide, CoA, FAD, NAD+ → MSUD if deficient.'
+    }
+  ],
+  puzzle: [
+    {
+      id:'p-1', type:'fitb', points:20,
+      text:'CLINICAL PUZZLE: A 2-week-old baby has feeding problems, severe vomiting, ketoacidosis, and a "burnt sugar" smell in the diaper.\n\nQ1: What is the diagnosis?\nQ2: Which three amino acids must be immediately restricted?',
+      answer:'msud leucine isoleucine valine',
+      acceptedAnswers:['msud','maple syrup','leucine','isoleucine','valine'],
+      timeLimit:90,
+      explanation:'MSUD (Maple Syrup Urine Disease): BCKDH deficiency. Restrict Leucine, Isoleucine, and Valine (branched-chain amino acids).'
+    }
+  ]
+};
+ 
+// ── STATE ──
+let players = {};
+let currentRound = 1;
+let qIndex = 0;
+let hostTimerInterval = null;
+let currentQData = null;
+ 
+// ── LOGIN ──
+window.hostLogin = function() {
+  const pw = document.getElementById('host-pw').value;
+  if (pw === HOST_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    initDashboard();
+  } else {
+    document.getElementById('host-pw').style.borderColor = 'var(--danger)';
+    showToast('Incorrect password', 'error');
+  }
+};
+ 
+function initDashboard() {
+  updateQuestionList();
+ 
+  onValue(ref(db, 'players'), snap => {
+    players = snap.val() || {};
+    updateLeaderboard();
+    updatePlayerTable();
+    updateOnlineCount();
+    updateResponseRate();
+  });
+ 
+  onValue(ref(db, 'gameState'), snap => {
+    const state = snap.val();
+    if (!state) return;
+    updateStatusIndicator(state.status);
+  });
+}
+ 
+// ── TABS ──
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+};
+ 
+// ── QUESTION SELECTOR ──
+window.updateQuestionList = function() {
+  const round = document.getElementById('round-sel').value;
+  const sel = document.getElementById('question-sel');
+  sel.innerHTML = '';
+  const qs = QUESTIONS[round] || [];
+  qs.forEach((q, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Q${i+1}: ${q.text.substring(0,60)}...`;
+    sel.appendChild(opt);
+  });
+  previewQuestion();
+};
+ 
+window.previewQuestion = function() {
+  const round = document.getElementById('round-sel').value;
+  const qi = parseInt(document.getElementById('question-sel').value);
+  const q = (QUESTIONS[round] || [])[qi];
+  if (!q) return;
+  currentQData = q;
+  const prev = document.getElementById('q-preview');
+  let html = `<strong>[${q.type.toUpperCase()}] ${q.text.substring(0,150)}${q.text.length>150?'...':''}</strong>`;
+  if (q.answer) html += `<br><br><span style="color:var(--success)">Answer: ${q.answer}</span>`;
+  if (q.points) html += `<br><span style="color:var(--warn)">Points: ${q.points}</span>`;
+  prev.innerHTML = html;
+  document.getElementById('timer-range').value = q.timeLimit || 30;
+  document.getElementById('timer-val-display').textContent = (q.timeLimit || 30) + 's';
+};
+ 
+// ── SEND QUESTION ──
+window.sendQuestion = async function() {
+  if (!currentQData) return;
+  qIndex++;
+  const round = document.getElementById('round-sel').value;
+  const timeLimit = parseInt(document.getElementById('timer-range').value);
+ 
+  await set(ref(db, 'gameState'), {
+    status: 'question',
+    round, qIndex,
+    question: { ...currentQData, timeLimit, index: qIndex },
+    sentAt: Date.now()
+  });
+ 
+  showToast('Question sent!', 'success');
+  document.getElementById('live-timer-card').style.display = 'block';
+  document.getElementById('answer-reveal-card').style.display = 'none';
+  startHostTimer(timeLimit);
+  renderHostTally(currentQData);
+};
+ 
+function startHostTimer(seconds) {
+  clearInterval(hostTimerInterval);
+  let remaining = seconds;
+  const el = document.getElementById('host-timer');
+  el.textContent = remaining;
+  el.className = 'live-timer-num';
+  hostTimerInterval = setInterval(() => {
+    remaining--;
+    el.textContent = remaining;
+    if (remaining <= 10) el.className = 'live-timer-num danger';
+    if (remaining <= 0) { clearInterval(hostTimerInterval); stopQuestion(); }
+  }, 1000);
+}
+ 
+window.stopQuestion = async function() {
+  clearInterval(hostTimerInterval);
+  await set(ref(db, 'gameState/status'), 'waiting');
+  document.getElementById('live-timer-card').style.display = 'none';
+  showToast('Question stopped', '');
+};
+ 
+window.revealAnswer = function() {
+  if (!currentQData) return;
+  const card = document.getElementById('answer-reveal-card');
+  const disp = document.getElementById('answer-display');
+  card.style.display = 'block';
+  let html = `<strong>Answer:</strong> ${currentQData.answer.toUpperCase()}<br><br>`;
+  if (currentQData.explanation) html += `<span style="color:var(--accent2);font-size:13px;">${currentQData.explanation}</span>`;
+  disp.innerHTML = html;
+};
+ 
+// ── LOBBY / GAME CONTROL ──
+window.openLobby = async function() {
+  await set(ref(db, 'gameState'), { status: 'lobby', startedAt: Date.now() });
+  showToast('Lobby opened!', 'success');
+};
+ 
+window.sendToLobby = async function() {
+  await set(ref(db, 'gameState/status'), 'lobby');
+};
+ 
+window.endQuiz = async function() {
+  if (!confirm('End the quiz for all players?')) return;
+  await set(ref(db, 'gameState'), { status: 'ended', endedAt: Date.now() });
+  showToast('Quiz ended', '');
+};
+ 
+// ── STATUS ──
+function updateStatusIndicator(status) {
+  const dot = document.getElementById('status-dot');
+  const label = document.getElementById('status-label');
+  dot.className = 'status-dot';
+  if (status === 'question') { dot.classList.add('live'); label.textContent = 'LIVE — Question active'; }
+  else if (status === 'lobby') { dot.classList.add('lobby'); label.textContent = 'Lobby — waiting for players'; }
+  else if (status === 'waiting') { label.textContent = 'Between questions'; }
+  else if (status === 'ended') { label.textContent = 'Quiz ended'; }
+}
+ 
+// ── LEADERBOARD ──
+const GROUP_COLORS = ['','var(--g1)','var(--g2)','var(--g3)','var(--g4)','var(--g5)','var(--g6)'];
+ 
+function getGroupScores() {
+  const scores = {1:0,2:0,3:0,4:0,5:0,6:0};
+  const members = {1:0,2:0,3:0,4:0,5:0,6:0};
+  Object.values(players).forEach(p => {
+    if (p.group >= 1 && p.group <= 6) {
+      scores[p.group] += (p.score || 0);
+      members[p.group]++;
+    }
+  });
+  return { scores, members };
+}
+ 
+function updateLeaderboard() {
+  const { scores, members } = getGroupScores();
+  const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+  const maxScore = Math.max(...Object.values(scores), 1);
+ 
+  // Grid cards
+  const grid = document.getElementById('group-grid');
+  grid.innerHTML = '';
+  sorted.forEach(([g, score], rank) => {
+    const card = document.createElement('div');
+    card.className = 'group-card' + (rank === 0 && score > 0 ? ' leader' : '');
+    card.innerHTML = `
+      ${rank === 0 && score > 0 ? '<div class="group-rank">1</div>' : ''}
+      <div class="group-name" style="color:${GROUP_COLORS[g]}">Group ${g}</div>
+      <div class="group-score" style="color:${GROUP_COLORS[g]}">${score}</div>
+      <div class="group-members">${members[g]} members</div>
+    `;
+    grid.appendChild(card);
+  });
+ 
+  // Bar chart
+  const chart = document.getElementById('bar-chart');
+  chart.innerHTML = '';
+  sorted.forEach(([g, score]) => {
+    const pct = Math.round(score / maxScore * 100);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label" style="color:${GROUP_COLORS[g]}">Group ${g}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%;background:${GROUP_COLORS[g]}">
+          <span class="bar-val">${score}</span>
+        </div>
+      </div>
+    `;
+    chart.appendChild(row);
+  });
+}
+ 
+function updatePlayerTable() {
+  const sorted = Object.entries(players).sort((a,b) => (b[1].score||0)-(a[1].score||0));
+  const tbody = document.getElementById('player-tbody');
+  tbody.innerHTML = '';
+  sorted.forEach(([id, p], i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${i+1}</td>
+      <td style="font-weight:500">${p.name}</td>
+      <td><span class="group-pill" style="background:${GROUP_COLORS[p.group]}22;color:${GROUP_COLORS[p.group]}">G${p.group}</span></td>
+      <td style="font-family:var(--mono);font-weight:600">${p.score||0}</td>
+      <td style="color:var(--success)">${p.correct||0}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('player-count').textContent = sorted.length;
+}
+ 
+function updateOnlineCount() {
+  const n = Object.values(players).filter(p => p.online).length;
+  document.getElementById('online-count').textContent = n + ' online';
+}
+ 
+function updateResponseRate() {
+  if (!currentQData) return;
+  const total = Object.keys(players).length;
+  const responded = Object.values(players).filter(p => p.lastAnswer && p.lastAnswer.qIndex === qIndex).length;
+  const pct = total > 0 ? Math.round(responded / total * 100) : 0;
+  document.getElementById('response-fill').style.width = pct + '%';
+  document.getElementById('response-pct').textContent = pct + '%';
+  document.getElementById('response-num').textContent = responded;
+  document.getElementById('response-total').textContent = total;
+}
+ 
+function renderHostTally(q) {
+  const tally = document.getElementById('host-tally');
+  if (!q.options) { tally.innerHTML = ''; return; }
+  tally.innerHTML = '<div class="section-title" style="margin-top:12px;">Live answer tally</div>';
+  const keys = ['A','B','C','D'];
+  const counts = {A:0,B:0,C:0,D:0};
+  const trackInterval = setInterval(() => {
+    Object.values(players).forEach(p => {
+      if (p.lastAnswer && p.lastAnswer.qIndex === qIndex) {
+        const ans = (p.lastAnswer.answer || '').toUpperCase();
+        if (counts[ans] !== undefined) counts[ans]++;
+      }
+    });
+    const total = Object.values(counts).reduce((a,b) => a+b, 0) || 1;
+    tally.querySelectorAll('.tally-fill').forEach((el, i) => {
+      const key = keys[i];
+      el.style.width = Math.round(counts[key] / total * 100) + '%';
+      el.parentElement.parentElement.querySelector('.tally-count').textContent = counts[key];
+    });
+    if (!hostTimerInterval) clearInterval(trackInterval);
+  }, 1000);
+ 
+  keys.forEach(k => {
+    const row = document.createElement('div');
+    row.className = 'tally-row';
+    row.innerHTML = `<span class="tally-key">${k}</span><div class="tally-track"><div class="tally-fill" style="width:0%"></div></div><span class="tally-count">0</span>`;
+    tally.appendChild(row);
+  });
+}
+ 
+function showToast(msg, type) {
+  const t = document.getElementById('host-toast');
+  t.textContent = msg;
+  t.className = 'toast-host show ' + type;
+  setTimeout(() => t.className = 'toast-host', 2500);
+}
+</script>
 </body>
 </html>
